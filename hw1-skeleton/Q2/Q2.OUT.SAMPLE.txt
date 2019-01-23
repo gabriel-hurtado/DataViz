@@ -42,6 +42,23 @@ cast_id,cast_name,average_score
 3,average_movie_score,,0,,0
 47.0892720306514
 ~~~~~
+cast_id,cast_name,collaboration_score
+770685050,Dick Cheney,83.0
+326391032,George W. Bush,83.0
+162652764,Dakota Fanning,56.6666666666667
+162657036,Gene Barry,56.6666666666667
+162652765,Miranda Otto,56.6666666666667
 ~~~~~
+count_overview
+12
 ~~~~~
+id
+76
+194
+582
+843
+137182
+152601
+265195
+293299
 ~~~~~

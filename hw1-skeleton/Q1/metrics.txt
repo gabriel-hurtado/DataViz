@@ -1,3 +1,0 @@
-Average degree 5.201
-Network Diameter 10
-Avg. path lenght 4.838

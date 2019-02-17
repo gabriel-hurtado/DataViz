@@ -1,0 +1,11 @@
+i.a	47 Match
+
+i.b 	4 columns were created
+
+ii	562 clusters with metaphone3
+
+iii	if(isNull(value), "Unbranded",value)
+
+iv	if(value.toNumber()  > 100, 1, 0)
+
+v	if(or(contains(value, "discount"),contains(value, "offer"),contains(value, "sale")), 1,0)

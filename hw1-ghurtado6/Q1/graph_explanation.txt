@@ -1,0 +1,2 @@
+I chose to clusterise the graph by degree, with the size of nodes being their pagerank value (how likely we are to find them by crawling randomly the graph)
+The labels are shownonly for the biggest nodes to clarify the graph.

@@ -1,0 +1,3 @@
+Average degree (number of edges conected to a node) 5.201
+Network Diameter (shortest distance between the two most distant nodes) 10
+Avg. path lenght (avg number of steps along shortest paths to reach everything) 4.838

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> 
+
+.bar { fill: steelblue; }
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: none;
+}
+.line {
+  stroke-width: 2;
+  fill: none;
+}
+</style>
+<body>
+<script src="../lib/d3.v5.min.js"></script>
+<div id="first" , style="float:left;"></div>
+<div id="second", style="float:right;"></div>
+<script>
+var data = [{country: 'Bangladesh', population_2012: 105905297, growth: {year_2013:42488 , year_2014:934 , year_2015:52633 , year_2016:112822 , year_2017:160792}},
+        {country: 'Ethopia', population_2012: 75656319, growth: {year_2013:1606010 , year_2014:1606705 , year_2015:1600666 , year_2016:1590077 , year_2017:1580805}},
+        {country: 'Kenya', population_2012: 33007327, growth: {year_2013:705153 , year_2014:703994 , year_2015:699906 , year_2016:694295 , year_2017:687910}},
+        {country: 'Afghanistan', population_2012: 23280573, growth: {year_2013:717151 , year_2014:706082 , year_2015:665025 , year_2016:616262 , year_2017:573643}},
+        {country: 'Morocco', population_2012: 13619520, growth: {year_2013:11862 , year_2014:7997 , year_2015:391 , year_2016:-8820 , year_2017:-17029}}];
+
+function cummul(d){
+  return d.population_2012 + d.growth.year_2013+ d.growth.year_2014+ d.growth.year_2015+ d.growth.year_2016+ d.growth.year_2017
+}
+
+function cummulUpTo(year, d){
+  if (year==2012)
+    {return d.population_2012}
+  else if (year==2013)
+    {return d.population_2012 + d.growth.year_2013}
+  else if (year==2014)
+    {return d.population_2012 + d.growth.year_2013+ d.growth.year_2014}
+  else  if (year==2015)
+    {return d.population_2012 + d.growth.year_2013+ d.growth.year_2014+ d.growth.year_2015}
+  else if (year==2016)
+    {return d.population_2012 + d.growth.year_2013+ d.growth.year_2014+ d.growth.year_2015+ d.growth.year_2016}
+  else{return -1}
+}
+
+function growthUpTo(year, d){
+  var growthNb
+  if (year==2013)
+    {growthNb = d.growth.year_2013}
+  else if (year==2014)
+    {growthNb= d.growth.year_2014}
+  else  if (year==2015)
+    {growthNb = d.growth.year_2015}
+  else if (year==2016)
+    {growthNb= d.growth.year_2016}
+  else if (year==2017)
+    {growthNb= d.growth.year_2017}
+  else{return -1}
+
+  return (growthNb / cummulUpTo(year-1, d))*100
+}
+
+var growth 
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 30, left: 80},
+    width = 860 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// set the ranges
+var y = d3.scaleBand()
+          .range([height, 0])
+          .padding(0.1);
+
+var x = d3.scaleLinear()
+          .range([0, width]);
+          
+// append the svg object to the body of the page
+// append a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("#first").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", 
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  // format the data
+  data.forEach(function(d) {
+    d.sales = +d.sales;
+  });
+
+  // Scale the range of the data in the domains
+  x.domain([0, d3.max(data, function(d){ return cummul(d); })])
+  y.domain(data.map(function(d) { return d.country; }).reverse());
+  //y.domain([0, d3.max(data, function(d) { return d.sales; })]);
+
+
+
+  // append the rectangles for the bar chart
+  var bars = svg.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("id","bar")
+      //.attr("x", function(d) { return x(d.sales); })
+      .attr("width", function(d) {return x(cummul(d)); } )
+      .attr("y", function(d) { return y(d.country); })
+      .attr("x", 0)
+      .attr("height", y.bandwidth())
+      .on('mouseover', function(d){
+
+
+       d3.select(this)
+              .style("fill", "red");
+//tt
+
+growth = [{data : growthUpTo(2013, d), year : 2013},{data : growthUpTo(2014, d), year : 2014},{data : growthUpTo(2015, d), year : 2015},{data : growthUpTo(2016, d), year : 2016},{data : growthUpTo(2017, d), year : 2017}]
+
+
+// set the dimensions and margins of the graph
+var margin2 = {top: 30, right: 80, bottom: 30, left: 80},
+    width2 = 460 - margin2.left - margin2.right,
+    height2 = 400 - margin2.top - margin2.bottom;
+// set the ranges
+var x2 = d3.scaleLinear().range([0, width2]);
+var y2 = d3.scaleLinear().range([height2, 0]);
+
+
+
+  // Scale the range of the data
+  x2.domain(d3.extent(growth, function(da) { return da.year; }));
+  y2.domain(d3.extent(growth, function(da) { return da.data; }));
+
+// define the line
+var valueline2 = d3.line()
+    .x(function(da) { return x2(da.year); })
+    .y(function(da) { return y2(da.data); });
+
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg2 = d3.select("#second").append("svg")
+    .attr("id","svg2")
+    .attr("width", width2 + margin2.left + margin2.right)
+    .attr("height", height2 + margin2.top + margin2.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin2.left + "," + margin2.top + ")");
+
+
+  // Add the valueline path.
+  svg2.append("path")
+      .data(growth)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("d", valueline2(growth));
+
+  // Add the X Axis
+  svg2.append("g")
+      .attr("transform", "translate(0," + height2 + ")")
+      .call(d3.axisBottom(x2).ticks(4));
+
+  // Add the Y Axis
+  svg2.append("g")
+      .call(d3.axisLeft(y2));
+
+})
+.on("mouseout",  function(d){
+d3.select(this)
+              .style("fill", "steelblue");
+d3.select("#svg2").remove()});
+
+
+
+
+//tt
+
+svg.append("g")
+  .attr("transform", "translate(" + 0 + "," + margin.top + ")")
+    .selectAll(".textlabel")
+   .data(data)
+   .enter()
+   .append("text")
+ .attr("class", "textlabel")
+ .style("font-family", "Arial")
+.attr("x", function(d){ return 10;  })
+ .attr("y", function(d){ return y(d.country) + y.bandwidth()/2 -15; })
+.text(function(d){ return cummul(d).toString().replace(/\B(?=(\d{3})+\b)/g, ",") ; }); 
+
+
+  // add the x Axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).tickFormat(""));
+
+  // add the y Axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y));
+
+
+
+
+
+</script>
+</body>

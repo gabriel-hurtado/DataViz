@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+<script src="../lib/d3.v5.min.js"></script>
+</head>
+
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.tile {
+  shape-rendering: crispEdges;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: none;
+}
+
+.content {
+  position: absolute;
+  left: 20%;
+}
+
+</style>
+<body>
+  <div class="content">
+  <h2 >Visualiwing Crimes in NYC</h2>
+  Year
+  <select  id="inds">
+    <option value="2011" selected="selected">2011</option>
+    <option value="2012">2012</option>
+    <option value="2013">2013</option>
+    <option value="2014">2014</option>
+    <option value="2015">2015</option>
+</select>
+</div>
+
+<div id="area1">
+<script>
+
+    
+    
+    var padding =5
+var margin = {top: 100, right: 100, bottom: 100, left: 100},
+    width = 600 - margin.left - margin.right,
+    height = 550 - margin.top - margin.bottom;
+
+
+    var heatmap
+    var CrimesText
+             d3.csv('heatmap.csv')
+              .then(function(data) {
+
+      heatmap=data
+      
+      
+/*
+      
+      var columnWidth = width/6;
+      
+      function maxCrimeYear(year, heatmap) {
+        maxCrime =0;
+      heatmap.forEach(function(d) {
+        if(d.Year == year){
+        curr=Math.max(d.Bronx,d.Brooklyn, d.Manhattan,d.Queens,d["Staten Island"]);
+          if(curr>maxCrime){
+
+            maxCrime=curr 
+          }
+        }
+        });
+      return  maxCrime
+      }
+    */
+
+
+
+
+  //x is crimetype
+  //y is neighboorhood
+  //z is number
+  reshaped={}
+  var i=0
+  heatmap.forEach(function(d) {
+  year=d.Year 
+  CrimesIds=[3,4,0,1,5,2]
+    CrimesText= ["Murder","Robbery","Assault","Burglary","Shooting","Housing"]
+    CrimesText  = CrimesText.sort()
+
+  StatesText=["Bronx","Brooklyn","Manhattan","Queens","Staten Island"]
+
+  if(!reshaped[year]){
+          reshaped[year]=[]
+          i=0
+        }
+        currCrimeId=CrimesIds[i]
+        reshaped[year].push({x:currCrimeId, y:0, z: parseInt(d.Bronx)})
+        reshaped[year].push({x:currCrimeId, y:1, z: parseInt(d.Brooklyn)})
+        reshaped[year].push({x:currCrimeId, y:2, z: parseInt(d.Manhattan)})
+        reshaped[year].push({x:currCrimeId, y:3, z: parseInt(d.Queens) })
+        reshaped[year].push({x:currCrimeId, y:4, z: parseInt(d["Staten Island"])})
+        i+=1
+
+  });
+
+
+
+
+function drawAll(reshapedYear){
+
+
+
+  var x = d3.scaleLinear().range([0, width]),
+      y = d3.scaleLinear().range([height, 0]),
+      z = d3.scaleQuantile().range(["#ffe6ff", "#ffccff","#ff99ff","#ff66ff","#ff33ff","#ff00ff","#cc00cc","#990099","#660066"]);
+
+x.domain(d3.extent(reshapedYear, function(d) { return d.x; }));
+  y.domain(d3.extent(reshapedYear, function(d) { return d.y; }));
+  z.domain(d3.extent(reshapedYear, function(d) { return d.z; }));
+  x.domain([x.domain()[0], +x.domain()[1] + 1]);
+  y.domain([y.domain()[0], y.domain()[1] + 1]);
+
+
+
+var svg = d3.select("#area1").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+svg.selectAll(".tile")
+      .data(reshapedYear)
+    .enter().append("rect")
+      .attr("class", "tile")
+      .attr("x", function(d) { return x(d.x); })
+      .attr("y", function(d) { return y(d.y+1); })
+      .attr("width", x(1) - x(0)-padding)
+      .attr("height", y(0)-y(1)-padding)
+      .style("fill", function(d) { return z(d.z); });
+
+
+var ticks = z.quantiles().concat(z.domain()[1]).map(function (x) { return parseInt(x); });
+
+var legend = svg.selectAll(".legend")
+      .data(ticks.reverse())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(" + (width + 20) + "," + (20 + i * 20) + ")"; });
+
+ legend.append("rect")
+      .attr("width", 20)
+      .attr("height", 20)
+      .style("fill", z);
+
+  legend.append("text")
+      .attr("x", 26)
+      .attr("y", 0)
+      .attr("dy", ".35em")
+      .text(String);
+
+  svg.append("text")
+      .attr("class", "label")
+      .attr("x", width + 20)
+      .attr("y", -10)
+      .attr("dy", ".35em")
+      .text("Count");
+
+ // Add an x-axis with label.
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x)
+        .tickValues([0, 1, 2, 3, 4, 5])
+        .tickFormat(function(d){ return CrimesText[parseInt(d)]; })
+        )
+      .selectAll("text")
+    .attr("y", 30)
+    .attr("x", -10)
+    .attr("dy", ".35em")
+    .attr("transform", "rotate(-90)")
+    .style("text-anchor", "end");
+
+ // text label for the x axis
+  svg.append("text")             
+      .attr("transform",
+            "translate(" + (width+ margin.right/ 3) + " ," + 
+                           (height + margin.top /3) + ")")
+      .style("text-anchor", "middle")
+      .style('stroke', '#000')
+      .text("Crime type");
+
+
+  // Add a y-axis with label.
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y).tickValues([0, 1, 2, 3, 4, ])
+        .tickFormat(function(d){ return StatesText[parseInt(d)]; })
+        )
+      .selectAll("text")
+    .attr("y", -40)
+    .attr("x", -10)
+    .attr("dy", ".35em")
+    .style("text-anchor", "end")
+        
+
+ // text label for the y axis
+  svg.append("text")
+      .attr("y", 0 - margin.top/3)
+      .attr("x",0 - margin.top/3)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .style('stroke', '#000')
+      .text("Borough");   
+
+}
+
+d3.select('#inds')
+      .on("change", function () {
+        var sect = document.getElementById("inds");
+        var section = sect.options[sect.selectedIndex].value;
+        d3.select("svg").remove();
+        drawAll(reshaped[section])
+      })
+
+drawAll(reshaped["2011"])
+
+}
+
+);
+</script>
+</div>
+</body>
+</html>
